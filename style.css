@@ -327,7 +327,7 @@ body {
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: auto 1fr 1fr;
     gap: 12px;
     padding: 12px;
     height: 100%;
@@ -335,19 +335,116 @@ body {
 }
 
 .panel-trends {
-    grid-row: 1 / 3;
+    grid-row: 1 / 4;
 }
 
 .panel-livefeed {
-    grid-row: 1 / 3;
+    grid-row: 1 / 4;
 }
 
-.panel-summary {
+.panel-market {
     grid-row: 1;
 }
 
-.panel-sources {
+.panel-summary {
     grid-row: 2;
+}
+
+.panel-sources {
+    grid-row: 3;
+}
+
+/* ============================================
+   MARKET / COTAÇÕES PANEL
+   ============================================ */
+
+.panel-market .panel-body {
+    padding: 10px 12px;
+}
+
+.market-section {
+    margin-bottom: 12px;
+}
+
+.market-section:last-child { margin-bottom: 0; }
+
+.market-section-title {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    padding-bottom: 2px;
+}
+
+.market-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+}
+
+.market-row:last-child { border-bottom: none; }
+
+.market-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.market-value {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: right;
+}
+
+.market-change {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 48px;
+    text-align: right;
+}
+
+.market-change.up { color: var(--green); }
+.market-change.down { color: var(--red); }
+.market-change.neutral { color: var(--text-muted); }
+
+.market-usdbrl {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+}
+
+.market-usdbrl .main {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--cyan);
+}
+
+.market-usdbrl .sub {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.market-updated {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    text-align: right;
+    margin-top: 6px;
 }
 
 /* Trend Items */
@@ -466,6 +563,12 @@ body {
 .feed-source-tag.reuters { background: #e65100; }
 .feed-source-tag.nyt { background: #e65100; }
 .feed-source-tag.bbc { background: #b71c1c; }
+.feed-source-tag.guardian { background: #052962; }
+.feed-source-tag.politico { background: #e71b23; }
+.feed-source-tag.aljazeera { background: #005f80; }
+.feed-source-tag.ap { background: #333; }
+.feed-source-tag.reddit { background: #ff4500; }
+.feed-source-tag.npr { background: #c62b28; }
 .feed-source-tag.google { background: #0277bd; }
 .feed-source-tag.investing { background: #00695c; }
 .feed-source-tag.seekingalpha { background: #ef6c00; }
@@ -1114,10 +1217,13 @@ body {
 @media (max-width: 1200px) {
     .dashboard-grid {
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto auto;
+        grid-template-rows: auto auto auto;
     }
     .panel-trends { grid-row: auto; }
     .panel-livefeed { grid-row: auto; }
+    .panel-market { grid-row: auto; }
+    .panel-summary { grid-row: auto; }
+    .panel-sources { grid-row: auto; }
 
     .feeds-layout {
         grid-template-columns: 180px 1fr 300px;

@@ -45,11 +45,11 @@ const FeedEngine = (() => {
             tagClass: 'bbc'
         },
         {
-            id: 'reuters',
+            id: 'nyt',
             name: 'NYT Business',
             url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml',
             color: '#e65100',
-            tagClass: 'reuters'
+            tagClass: 'nyt'
         },
         {
             id: 'google',
@@ -71,6 +71,70 @@ const FeedEngine = (() => {
             url: 'https://seekingalpha.com/market_currents.xml',
             color: '#ef6c00',
             tagClass: 'seekingalpha'
+        },
+        /* Notícias gerais e internacionais */
+        {
+            id: 'bbcworld',
+            name: 'BBC World',
+            url: 'https://feeds.bbci.co.uk/news/world/rss.xml',
+            color: '#b71c1c',
+            tagClass: 'bbc'
+        },
+        {
+            id: 'guardian',
+            name: 'The Guardian World',
+            url: 'https://www.theguardian.com/world/rss',
+            color: '#052962',
+            tagClass: 'guardian'
+        },
+        {
+            id: 'politico',
+            name: 'Politico',
+            url: 'https://rss.politico.com/politics-news.xml',
+            color: '#e71b23',
+            tagClass: 'politico'
+        },
+        {
+            id: 'reuters',
+            name: 'Reuters',
+            url: 'https://www.reuters.com/world/rss',
+            color: '#e65100',
+            tagClass: 'reuters'
+        },
+        {
+            id: 'aljazeera',
+            name: 'Al Jazeera',
+            url: 'https://www.aljazeera.com/xml/rss/all.xml',
+            color: '#005f80',
+            tagClass: 'aljazeera'
+        },
+        {
+            id: 'apnews',
+            name: 'AP News',
+            url: 'https://apnews.com/apf-topnews',
+            color: '#333',
+            tagClass: 'ap'
+        },
+        {
+            id: 'reddit-world',
+            name: 'Reddit r/worldnews',
+            url: 'https://www.reddit.com/r/worldnews/.rss',
+            color: '#ff4500',
+            tagClass: 'reddit'
+        },
+        {
+            id: 'reddit-politics',
+            name: 'Reddit r/politics',
+            url: 'https://www.reddit.com/r/politics/.rss',
+            color: '#ff4500',
+            tagClass: 'reddit'
+        },
+        {
+            id: 'npr',
+            name: 'NPR News',
+            url: 'https://feeds.npr.org/1001/rss.xml',
+            color: '#c62b28',
+            tagClass: 'npr'
         }
     ];
 

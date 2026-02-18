@@ -16,15 +16,21 @@
 
     // ---- INIT ----
 
+    let marketRefreshInterval = null;
+
     function init() {
         setupNavigation();
         setupClock();
         setupFeedControls();
+        setupMarketControls();
         setupTranscriptControls();
         setupModal();
         FeedEngine.onUpdate(handleFeedUpdate);
+        MarketData.onUpdate(renderMarket);
         loadFeeds();
+        MarketData.refresh();
         refreshInterval = setInterval(loadFeeds, 5 * 60 * 1000);
+        marketRefreshInterval = setInterval(() => MarketData.refresh(), 2 * 60 * 1000);
     }
 
     // ---- NAVIGATION ----
@@ -103,6 +109,80 @@
                 searchQuery = e.target.value;
                 renderFeedsList();
             });
+        }
+    }
+
+    // ---- MARKET / COTAÇÕES ----
+
+    function setupMarketControls() {
+        const btn = $('#btn-refresh-market');
+        if (btn) btn.addEventListener('click', () => MarketData.refresh());
+    }
+
+    function renderMarket(cache) {
+        const container = $('#market-container');
+        if (!container) return;
+
+        const parts = [];
+
+        if (cache.usdbrl) {
+            const u = cache.usdbrl;
+            const changeClass = u.pctChange > 0 ? 'up' : u.pctChange < 0 ? 'down' : 'neutral';
+            parts.push(`
+                <div class="market-usdbrl">
+                    <div>
+                        <div class="main">R$ ${u.bid.toFixed(4)}</div>
+                        <div class="sub">USD/BRL · Compra</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span class="market-change ${changeClass}">${u.pctChange >= 0 ? '+' : ''}${u.pctChange.toFixed(2)}%</span>
+                        <div class="sub">Máx R$ ${u.high.toFixed(2)} · Mín R$ ${u.low.toFixed(2)}</div>
+                    </div>
+                </div>
+            `);
+        }
+
+        if (cache.indices && cache.indices.length) {
+            parts.push('<div class="market-section"><div class="market-section-title">B3 & EUA</div>');
+            cache.indices.forEach(idx => {
+                const changeClass = idx.changePct == null ? 'neutral' : idx.changePct > 0 ? 'up' : idx.changePct < 0 ? 'down' : 'neutral';
+                const value = idx.price != null ? idx.price.toLocaleString('pt-BR') : '—';
+                const change = idx.changePct != null ? (idx.changePct >= 0 ? '+' : '') + idx.changePct + '%' : '—';
+                parts.push(`
+                    <div class="market-row">
+                        <span class="market-label">${idx.name}</span>
+                        <span class="market-value">${value}</span>
+                        <span class="market-change ${changeClass}">${change}</span>
+                    </div>
+                `);
+            });
+            parts.push('</div>');
+        }
+
+        if (cache.crypto && cache.crypto.length) {
+            parts.push('<div class="market-section"><div class="market-section-title">Crypto</div>');
+            cache.crypto.forEach(c => {
+                const changeClass = c.change24 > 0 ? 'up' : c.change24 < 0 ? 'down' : 'neutral';
+                const priceStr = c.price >= 1000 ? c.price.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : c.price.toFixed(2);
+                parts.push(`
+                    <div class="market-row">
+                        <span class="market-label">${c.name}</span>
+                        <span class="market-value">$${priceStr}</span>
+                        <span class="market-change ${changeClass}">${(c.change24 >= 0 ? '+' : '') + c.change24.toFixed(2)}%</span>
+                    </div>
+                `);
+            });
+            parts.push('</div>');
+        }
+
+        if (cache.updated) {
+            parts.push(`<div class="market-updated">Atualizado ${cache.updated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>`);
+        }
+
+        if (parts.length === 0) {
+            container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Carregando cotações...</p></div>';
+        } else {
+            container.innerHTML = parts.join('');
         }
     }
 
