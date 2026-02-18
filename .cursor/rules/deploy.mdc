@@ -1,0 +1,23 @@
+---
+description: Sempre que terminar alterações no projeto, fazer commit e push para o GitHub.
+globs: 
+alwaysApply: true
+---
+
+# Deploy após alterações
+
+Ao concluir alterações neste projeto (painelinfo / RA Terminal):
+
+1. **Sempre** fazer commit das mudanças e push para o repositório remoto.
+2. Usar identidade Git: `user.name="FabioSilverio"` e `user.email="FabioSilverio@users.noreply.github.com"`.
+3. Mensagem de commit clara e em português ou inglês (ex.: "feat: ...", "fix: ...").
+4. Push para `origin main`.
+
+Isso mantém o GitHub Pages atualizado em: https://fabiosilverio.github.io/painelinfo/
+
+Comando sugerido após edições:
+```
+git add -A
+git -c user.name="FabioSilverio" -c user.email="FabioSilverio@users.noreply.github.com" commit -m "tipo: descrição"
+git push origin main
+```
