@@ -42,16 +42,29 @@
         <!-- DASHBOARD VIEW -->
         <main id="view-dashboard" class="view active">
             <div class="dashboard-grid">
-                <!-- Trending Keywords Panel -->
+                <!-- Left: Reddit + Trending -->
                 <section class="panel panel-trends">
                     <div class="panel-header">
-                        <h2><span class="ph-icon">▲</span> Tendências Emergentes</h2>
-                        <span class="panel-badge" id="trend-count">0</span>
+                        <h2><span class="ph-icon">◉</span> Reddit em alta</h2>
+                        <div class="panel-controls">
+                            <button class="ctrl-btn" id="btn-refresh-reddit" title="Atualizar Reddit">⟳</button>
+                            <span class="panel-badge" id="reddit-count">0</span>
+                        </div>
                     </div>
-                    <div class="panel-body" id="trends-container">
+                    <div class="panel-body panel-body-scroll" id="reddit-container">
                         <div class="loading-state">
                             <div class="spinner"></div>
-                            <p>Analisando tendências...</p>
+                            <p>Carregando Reddit...</p>
+                        </div>
+                    </div>
+                    <div class="panel-header panel-header-sub">
+                        <h2><span class="ph-icon">▲</span> Trending / Mais pesquisados</h2>
+                        <span class="panel-badge" id="trend-count">0</span>
+                    </div>
+                    <div class="panel-body panel-body-scroll" id="trends-container">
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <p>Analisando tendências na mídia...</p>
                         </div>
                     </div>
                 </section>
@@ -214,6 +227,7 @@
 
     <script src="js/nlp.js"></script>
     <script src="js/feeds.js"></script>
+    <script src="js/reddit.js"></script>
     <script src="js/market.js"></script>
     <script src="js/transcript.js"></script>
     <script src="js/app.js"></script>

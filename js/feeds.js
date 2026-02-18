@@ -116,20 +116,6 @@ const FeedEngine = (() => {
             tagClass: 'ap'
         },
         {
-            id: 'reddit-world',
-            name: 'Reddit r/worldnews',
-            url: 'https://www.reddit.com/r/worldnews/.rss',
-            color: '#ff4500',
-            tagClass: 'reddit'
-        },
-        {
-            id: 'reddit-politics',
-            name: 'Reddit r/politics',
-            url: 'https://www.reddit.com/r/politics/.rss',
-            color: '#ff4500',
-            tagClass: 'reddit'
-        },
-        {
             id: 'npr',
             name: 'NPR News',
             url: 'https://feeds.npr.org/1001/rss.xml',

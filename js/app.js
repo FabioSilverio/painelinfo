@@ -28,10 +28,14 @@
         setupModal();
         FeedEngine.onUpdate(handleFeedUpdate);
         MarketData.onUpdate(renderMarket);
+        RedditHot.onUpdate(renderReddit);
         loadFeeds();
         MarketData.refresh();
+        RedditHot.refresh();
+        setupRedditControls();
         refreshInterval = setInterval(loadFeeds, 2000);
         marketRefreshInterval = setInterval(() => MarketData.refresh(), 2000);
+        setInterval(() => RedditHot.refresh(), 60000);
     }
 
     // ---- NAVIGATION ----
@@ -97,6 +101,33 @@
         renderTrends();
         renderFeedFilter();
         if (currentView === 'feeds') renderFeedsList();
+    }
+
+    // ---- REDDIT EM ALTA ----
+
+    function setupRedditControls() {
+        const btn = $('#btn-refresh-reddit');
+        if (btn) btn.addEventListener('click', () => RedditHot.refresh());
+    }
+
+    function renderReddit(posts) {
+        const container = $('#reddit-container');
+        const countEl = $('#reddit-count');
+        if (!container) return;
+        if (countEl) countEl.textContent = posts ? posts.length : 0;
+        if (!posts || posts.length === 0) {
+            container.innerHTML = '<div class="empty-state"><p>Nenhum post com score alto no momento. Tente atualizar.</p></div>';
+            return;
+        }
+        container.innerHTML = posts.map(p => `
+            <a class="reddit-post-item" href="${escapeHTML(p.permalink)}" target="_blank" rel="noopener">
+                <div class="reddit-post-meta">
+                    <span class="reddit-sub">r/${escapeHTML(p.subreddit)}</span>
+                    <span class="reddit-score"><strong>${p.score}</strong> pts · ${p.numComments} coment.</span>
+                </div>
+                <div class="reddit-post-title">${escapeHTML(p.title)}</div>
+            </a>
+        `).join('');
     }
 
     function setupFeedControls() {
