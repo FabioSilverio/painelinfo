@@ -17,6 +17,7 @@
     // ---- INIT ----
 
     let marketRefreshInterval = null;
+    let feedsLoading = false;
 
     function init() {
         setupNavigation();
@@ -29,8 +30,8 @@
         MarketData.onUpdate(renderMarket);
         loadFeeds();
         MarketData.refresh();
-        refreshInterval = setInterval(loadFeeds, 5 * 60 * 1000);
-        marketRefreshInterval = setInterval(() => MarketData.refresh(), 2 * 60 * 1000);
+        refreshInterval = setInterval(loadFeeds, 2000);
+        marketRefreshInterval = setInterval(() => MarketData.refresh(), 2000);
     }
 
     // ---- NAVIGATION ----
@@ -68,12 +69,16 @@
     // ---- FEEDS ----
 
     async function loadFeeds() {
+        if (feedsLoading) return;
+        feedsLoading = true;
         setStatus('CARREGANDO', 'loading');
         try {
             await FeedEngine.fetchAllFeeds();
             setStatus('AO VIVO', 'online');
         } catch {
             setStatus('ERRO', 'error');
+        } finally {
+            feedsLoading = false;
         }
     }
 

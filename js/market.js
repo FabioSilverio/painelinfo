@@ -5,7 +5,10 @@
 
 const MarketData = (() => {
 
-    const CORS_PROXY = (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    const YAHOO_PROXIES = [
+        url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+        url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    ];
 
     const YAHOO_SYMBOLS = [
         { id: 'bvsp', name: 'Ibovespa', symbol: '^BVSP', label: 'B3' },
@@ -74,28 +77,36 @@ const MarketData = (() => {
     async function fetchYahooIndices() {
         const results = [];
         for (const { id, name, symbol, label } of YAHOO_SYMBOLS) {
-            try {
-                const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1d`;
-                const r = await fetchWithTimeout(CORS_PROXY(url), 10000);
-                if (!r.ok) continue;
-                const data = await r.json();
-                const chart = data?.chart?.result?.[0];
-                if (!chart) continue;
-                const meta = chart.meta || {};
-                const quote = chart.indicators?.quote?.[0];
-                const current = meta.regularMarketPrice ?? (quote?.close?.filter(Boolean).pop()) ?? 0;
-                const previous = meta.previousClose ?? meta.chartPreviousClose ?? current;
-                const pct = previous ? ((current - previous) / previous) * 100 : 0;
-                results.push({
-                    id,
-                    name: label,
-                    fullName: name,
-                    price: Math.round(current * 10) / 10,
-                    changePct: Math.round(pct * 100) / 100
-                });
-            } catch {
-                results.push({ id, name: label, fullName: name, price: null, changePct: null });
+            let done = false;
+            for (const proxyFn of YAHOO_PROXIES) {
+                try {
+                    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1d`;
+                    const r = await fetchWithTimeout(proxyFn(url), 12000);
+                    if (!r.ok) continue;
+                    const text = await r.text();
+                    let data;
+                    try { data = JSON.parse(text); } catch { continue; }
+                    const chart = data?.chart?.result?.[0];
+                    if (!chart) continue;
+                    const meta = chart.meta || {};
+                    const quote = chart.indicators?.quote?.[0];
+                    const current = meta.regularMarketPrice ?? (Array.isArray(quote?.close) ? quote.close.filter(Boolean).pop() : null) ?? 0;
+                    const previous = meta.chartPreviousClose ?? meta.previousClose ?? current;
+                    const pct = previous && current ? ((current - previous) / previous) * 100 : 0;
+                    results.push({
+                        id,
+                        name: label,
+                        fullName: name,
+                        price: Math.round(current * 100) / 100,
+                        changePct: Math.round(pct * 100) / 100
+                    });
+                    done = true;
+                    break;
+                } catch {
+                    continue;
+                }
             }
+            if (!done) results.push({ id, name: label, fullName: name, price: null, changePct: null });
         }
         return results;
     }

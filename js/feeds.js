@@ -161,7 +161,7 @@ const FeedEngine = (() => {
                 title: cleanHTML(item.title || ''),
                 link: item.link || '',
                 description: cleanHTML(item.description || '').substring(0, 500),
-                pubDate: item.pubDate ? new Date(item.pubDate) : new Date(),
+                pubDate: parsePubDate(item) || new Date(0),
                 source: source,
                 creator: item.author || '',
                 read: false
@@ -216,12 +216,13 @@ const FeedEngine = (() => {
                 const creator = getTextContent(item, 'dc:creator') || getTextContent(item, 'author');
 
                 if (title) {
+                    const parsed = pubDate ? (() => { const d = new Date(pubDate); return isNaN(d.getTime()) ? null : d; })() : null;
                     articles.push({
                         id: `${source.id}-${hashString(title)}`,
                         title: cleanHTML(title),
                         link,
                         description: description ? description.substring(0, 500) : '',
-                        pubDate: pubDate ? new Date(pubDate) : new Date(),
+                        pubDate: parsed || new Date(0),
                         source: source,
                         creator,
                         read: false
@@ -259,6 +260,16 @@ const FeedEngine = (() => {
             hash |= 0;
         }
         return Math.abs(hash).toString(36);
+    }
+
+    function parsePubDate(item) {
+        const raw = item.pubDate || item.published || item.updated || item.date;
+        if (!raw || typeof raw !== 'string') return null;
+        const d = new Date(raw.trim());
+        if (isNaN(d.getTime())) return null;
+        const now = new Date();
+        if (d.getTime() > now.getTime()) return now;
+        return d;
     }
 
     async function fetchSource(source) {
@@ -359,9 +370,10 @@ const FeedEngine = (() => {
     }
 
     function formatTimeAgo(date) {
-        if (!date) return '';
+        if (!date || !(date instanceof Date) || isNaN(date.getTime())) return '—';
         const now = new Date();
-        const diff = now - date;
+        let diff = now - date;
+        if (diff < 0) return 'agora';
         const mins = Math.floor(diff / 60000);
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);
