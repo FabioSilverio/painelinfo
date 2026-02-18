@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RA Terminal — Research Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- HEADER -->
+        <header id="header">
+            <div class="header-left">
+                <div class="logo">
+                    <span class="logo-icon">◆</span>
+                    <span class="logo-text">RA</span>
+                    <span class="logo-sub">TERMINAL</span>
+                </div>
+            </div>
+            <nav class="header-nav">
+                <button class="nav-btn active" data-view="dashboard">
+                    <span class="nav-icon">⊞</span> Dashboard
+                </button>
+                <button class="nav-btn" data-view="feeds">
+                    <span class="nav-icon">◉</span> Feed Reader
+                </button>
+                <button class="nav-btn" data-view="transcript">
+                    <span class="nav-icon">⎔</span> Transcript Analyzer
+                </button>
+            </nav>
+            <div class="header-right">
+                <div class="header-status">
+                    <span class="status-dot pulse"></span>
+                    <span id="feed-status">AGUARDANDO</span>
+                </div>
+                <div class="header-clock" id="clock"></div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD VIEW -->
+        <main id="view-dashboard" class="view active">
+            <div class="dashboard-grid">
+                <!-- Trending Keywords Panel -->
+                <section class="panel panel-trends">
+                    <div class="panel-header">
+                        <h2><span class="ph-icon">▲</span> Tendências Emergentes</h2>
+                        <span class="panel-badge" id="trend-count">0</span>
+                    </div>
+                    <div class="panel-body" id="trends-container">
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <p>Analisando tendências...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Live Feed Panel -->
+                <section class="panel panel-livefeed">
+                    <div class="panel-header">
+                        <h2><span class="ph-icon">●</span> Feed ao Vivo</h2>
+                        <div class="panel-controls">
+                            <button class="ctrl-btn" id="btn-refresh" title="Atualizar feeds">⟳</button>
+                            <select id="feed-filter" class="ctrl-select">
+                                <option value="all">Todas as Fontes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="panel-body feed-scroll" id="livefeed-container">
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <p>Carregando feeds financeiros...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Summary Panel -->
+                <section class="panel panel-summary">
+                    <div class="panel-header">
+                        <h2><span class="ph-icon">◧</span> Resumo Automático</h2>
+                    </div>
+                    <div class="panel-body" id="summary-container">
+                        <div class="empty-state">
+                            <p>Selecione um artigo para ver o resumo automático</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Source Health Panel -->
+                <section class="panel panel-sources">
+                    <div class="panel-header">
+                        <h2><span class="ph-icon">◈</span> Fontes Ativas</h2>
+                    </div>
+                    <div class="panel-body" id="sources-container"></div>
+                </section>
+            </div>
+        </main>
+
+        <!-- FEED READER VIEW -->
+        <main id="view-feeds" class="view">
+            <div class="feeds-layout">
+                <aside class="feeds-sidebar">
+                    <div class="sidebar-header">
+                        <h3>Fontes</h3>
+                    </div>
+                    <div id="source-list" class="source-list"></div>
+                    <div class="sidebar-header" style="margin-top:16px">
+                        <h3>Buscar</h3>
+                    </div>
+                    <input type="text" id="feed-search" class="search-input" placeholder="Filtrar artigos...">
+                </aside>
+                <div class="feeds-main">
+                    <div class="feeds-list" id="feeds-list-container">
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <p>Carregando artigos...</p>
+                        </div>
+                    </div>
+                </div>
+                <aside class="feeds-detail">
+                    <div id="article-detail" class="article-detail">
+                        <div class="empty-state">
+                            <div class="empty-icon">⎔</div>
+                            <p>Selecione um artigo para ler</p>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </main>
+
+        <!-- TRANSCRIPT ANALYZER VIEW -->
+        <main id="view-transcript" class="view">
+            <div class="transcript-layout">
+                <div class="transcript-input-area">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2><span class="ph-icon">⎔</span> Transcrição</h2>
+                            <div class="panel-controls">
+                                <button class="ctrl-btn accent" id="btn-analyze">▶ Analisar</button>
+                                <button class="ctrl-btn" id="btn-clear-transcript">✕ Limpar</button>
+                                <button class="ctrl-btn" id="btn-sample">◆ Exemplo</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <textarea id="transcript-input" class="transcript-textarea" placeholder="Cole aqui a transcrição de um earnings call, entrevista, ou qualquer documento para análise..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="transcript-results-area">
+                    <div id="transcript-results" class="transcript-results">
+                        <div class="empty-state">
+                            <div class="empty-icon">◇</div>
+                            <h3>Análise de Transcrições</h3>
+                            <p>Cole uma transcrição e clique em "Analisar" para extrair insights, inconsistências e citações relevantes automaticamente.</p>
+                            <div class="feature-list">
+                                <div class="feature-item">
+                                    <span class="fi-icon">▸</span>
+                                    <span>Extração de citações-chave</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="fi-icon">▸</span>
+                                    <span>Detecção de métricas e números</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="fi-icon">▸</span>
+                                    <span>Análise de sentimento</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="fi-icon">▸</span>
+                                    <span>Identificação de inconsistências</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="fi-icon">▸</span>
+                                    <span>Forward-looking statements</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="fi-icon">▸</span>
+                                    <span>Resumo executivo automático</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- ARTICLE MODAL -->
+        <div id="article-modal" class="modal hidden">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modal-title"></h2>
+                    <button class="modal-close" id="modal-close">✕</button>
+                </div>
+                <div class="modal-body" id="modal-body"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/nlp.js"></script>
+    <script src="js/feeds.js"></script>
+    <script src="js/transcript.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
