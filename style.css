@@ -646,6 +646,18 @@ body {
 .feed-source-tag.investing { background: #00695c; }
 .feed-source-tag.seekingalpha { background: #ef6c00; }
 
+.feed-badge-new {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    background: var(--green, #2e7d32);
+    color: #fff;
+}
+
 .feed-time {
     font-family: var(--font-mono);
     font-size: 10px;

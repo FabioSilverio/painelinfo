@@ -33,7 +33,7 @@
         MarketData.refresh();
         RedditHot.refresh();
         setupRedditControls();
-        refreshInterval = setInterval(loadFeeds, 5 * 60 * 1000);
+        refreshInterval = setInterval(loadFeeds, 60000);
         marketRefreshInterval = setInterval(() => MarketData.refresh(), 2000);
         setInterval(() => RedditHot.refresh(), 60000);
         setInterval(() => {
@@ -120,7 +120,7 @@
         if (!container) return;
         if (countEl) countEl.textContent = posts ? posts.length : 0;
         if (!posts || posts.length === 0) {
-            container.innerHTML = '<div class="empty-state"><p>Nenhum post com score alto no momento. Tente atualizar.</p></div>';
+            container.innerHTML = '<div class="empty-state"><p>Nenhum post com score alto na última meia hora. Tente atualizar.</p></div>';
             return;
         }
         container.innerHTML = posts.map(p => `
@@ -287,16 +287,21 @@
             return;
         }
 
-        container.innerHTML = articles.slice(0, 50).map((a, i) => `
+        const now = Date.now();
+        const NEW_BADGE_MS = 2 * 60 * 1000;
+        container.innerHTML = articles.slice(0, 50).map((a, i) => {
+            const isNew = a.addedAt && (now - a.addedAt) < NEW_BADGE_MS;
+            return `
             <div class="feed-card unread" data-id="${a.id}" style="--i:${i}">
                 <div class="feed-card-header">
                     <span class="feed-source-tag ${a.source.tagClass}">${a.source.name}</span>
+                    ${isNew ? '<span class="feed-badge-new">Novo</span>' : ''}
                     <span class="feed-time">${FeedEngine.formatTimeAgo(a.pubDate)}</span>
                 </div>
                 <div class="feed-card-title">${escapeHTML(a.title)}</div>
                 ${a.description ? `<div class="feed-card-excerpt">${escapeHTML(a.description.substring(0, 150))}</div>` : ''}
             </div>
-        `).join('');
+        `}).join('');
 
         container.querySelectorAll('.feed-card').forEach(card => {
             card.addEventListener('click', () => {

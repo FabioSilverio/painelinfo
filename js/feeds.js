@@ -142,15 +142,17 @@ const FeedEngine = (() => {
             const data = await resp.json();
             if (data.status !== 'ok' || !data.items) return null;
 
+            const now = Date.now();
             return data.items.map(item => ({
                 id: `${source.id}-${hashString(item.title || '')}`,
                 title: cleanHTML(item.title || ''),
                 link: item.link || '',
                 description: cleanHTML(item.description || '').substring(0, 500),
-                pubDate: parsePubDate(item) || new Date(0),
+                pubDate: parsePubDate(item) || new Date(now - 3600000),
                 source: source,
                 creator: item.author || '',
-                read: false
+                read: false,
+                addedAt: null
             })).filter(a => a.title);
         } catch {
             return null;
@@ -202,16 +204,19 @@ const FeedEngine = (() => {
                 const creator = getTextContent(item, 'dc:creator') || getTextContent(item, 'author');
 
                 if (title) {
-                    const parsed = pubDate ? (() => { const d = new Date(pubDate); return isNaN(d.getTime()) ? null : d; })() : null;
+                    let parsed = pubDate ? (() => { const d = new Date(pubDate); return isNaN(d.getTime()) ? null : d; })() : null;
+                    const fallbackDate = new Date(Date.now() - 3600000);
+                    if (parsed && parsed.getTime() > Date.now()) parsed = new Date(Date.now() - 60000);
                     articles.push({
                         id: `${source.id}-${hashString(title)}`,
                         title: cleanHTML(title),
                         link,
                         description: description ? description.substring(0, 500) : '',
-                        pubDate: parsed || new Date(0),
+                        pubDate: parsed || fallbackDate,
                         source: source,
                         creator,
-                        read: false
+                        read: false,
+                        addedAt: null
                     });
                 }
             });
@@ -253,6 +258,10 @@ const FeedEngine = (() => {
         if (!raw || typeof raw !== 'string') return null;
         const d = new Date(raw.trim());
         if (isNaN(d.getTime())) return null;
+        const now = Date.now();
+        if (d.getTime() > now) {
+            return new Date(now - 60000);
+        }
         return d;
     }
 
@@ -301,6 +310,7 @@ const FeedEngine = (() => {
         });
 
         const byId = new Map(allArticles.map(a => [a.id, a]));
+        const now = Date.now();
         for (const article of newArticles) {
             const existing = byId.get(article.id);
             if (existing) {
@@ -309,6 +319,7 @@ const FeedEngine = (() => {
                 existing.description = article.description;
                 existing.link = article.link;
             } else {
+                if (!article.addedAt) article.addedAt = now;
                 byId.set(article.id, article);
             }
         }
@@ -364,7 +375,7 @@ const FeedEngine = (() => {
         if (!date || !(date instanceof Date) || isNaN(date.getTime())) return '—';
         const now = new Date();
         let diff = now - date;
-        if (diff < 0) return 'agora';
+        if (diff < 0) return '1 min';
         const mins = Math.floor(diff / 60000);
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);

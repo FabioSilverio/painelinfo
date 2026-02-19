@@ -1,18 +1,17 @@
 /* ============================================
-   REDDIT HOT — Posts em alta por score
+   REDDIT HOT — Posts em alta por score na última meia hora
    Usa JSON API via CORS proxy (sem API key)
    ============================================ */
 
 const RedditHot = (() => {
 
-    const MIN_SCORE = 250;
+    const MIN_SCORE = 50;
+    const WINDOW_MINUTES = 30;
     const SUBS = ['worldnews', 'politics', 'news'];
     const CORS_PROXIES = [
         url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
         url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
     ];
-
-    const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
     let cache = [];
     let callbacks = [];
@@ -26,8 +25,8 @@ const RedditHot = (() => {
         }).finally(() => clearTimeout(t));
     }
 
-    async function fetchSubredditHot(sub) {
-        const url = `https://www.reddit.com/r/${sub}/hot.json?limit=25&raw_json=1`;
+    async function fetchSubredditNew(sub) {
+        const url = `https://www.reddit.com/r/${sub}/new.json?limit=50&raw_json=1`;
         for (const proxyFn of CORS_PROXIES) {
             try {
                 const proxied = proxyFn(url);
@@ -36,16 +35,16 @@ const RedditHot = (() => {
                 const data = await r.json();
                 const children = data?.data?.children || [];
                 return children
-                    .filter(c => c.data && !c.data.stickied && (c.data.score || 0) >= MIN_SCORE)
+                    .filter(c => c.data && !c.data.stickied)
                     .map(c => ({
                         id: c.data.id,
                         title: c.data.title,
                         subreddit: c.data.subreddit,
-                        score: c.data.score,
+                        score: c.data.score || 0,
                         numComments: c.data.num_comments || 0,
                         url: c.data.url?.startsWith('http') ? c.data.url : `https://reddit.com${c.data.permalink || ''}`,
                         permalink: `https://reddit.com${c.data.permalink || ''}`,
-                        created: c.data.created_utc ? new Date(c.data.created_utc * 1000) : null
+                        createdUtc: c.data.created_utc
                     }));
             } catch {
                 continue;
@@ -55,21 +54,23 @@ const RedditHot = (() => {
     }
 
     async function refresh() {
-        const results = await Promise.allSettled(SUBS.map(sub => fetchSubredditHot(sub)));
+        const cutoff = (Date.now() / 1000) - (WINDOW_MINUTES * 60);
+        const results = await Promise.allSettled(SUBS.map(sub => fetchSubredditNew(sub)));
         const all = [];
         results.forEach(r => {
             if (r.status === 'fulfilled' && Array.isArray(r.value)) all.push(...r.value);
         });
         const seen = new Set();
         cache = all
+            .filter(p => p.createdUtc >= cutoff && (p.score || 0) >= MIN_SCORE)
             .filter(p => {
-                const key = p.id;
-                if (seen.has(key)) return false;
-                seen.add(key);
+                if (seen.has(p.id)) return false;
+                seen.add(p.id);
                 return true;
             })
             .sort((a, b) => (b.score || 0) - (a.score || 0))
-            .slice(0, 25);
+            .slice(0, 25)
+            .map(p => ({ ...p, created: p.createdUtc ? new Date(p.createdUtc * 1000) : null }));
         callbacks.forEach(cb => { try { cb(cache); } catch {} });
         return cache;
     }
