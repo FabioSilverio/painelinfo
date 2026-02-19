@@ -253,8 +253,6 @@ const FeedEngine = (() => {
         if (!raw || typeof raw !== 'string') return null;
         const d = new Date(raw.trim());
         if (isNaN(d.getTime())) return null;
-        const now = new Date();
-        if (d.getTime() > now.getTime()) return now;
         return d;
     }
 
@@ -302,12 +300,19 @@ const FeedEngine = (() => {
             }
         });
 
-        const existingIds = new Set(allArticles.map(a => a.id));
+        const byId = new Map(allArticles.map(a => [a.id, a]));
         for (const article of newArticles) {
-            if (!existingIds.has(article.id)) {
-                allArticles.push(article);
+            const existing = byId.get(article.id);
+            if (existing) {
+                existing.pubDate = article.pubDate;
+                existing.title = article.title;
+                existing.description = article.description;
+                existing.link = article.link;
+            } else {
+                byId.set(article.id, article);
             }
         }
+        allArticles = Array.from(byId.values());
 
         allArticles.sort((a, b) => b.pubDate - a.pubDate);
 
@@ -365,7 +370,7 @@ const FeedEngine = (() => {
         const days = Math.floor(diff / 86400000);
 
         if (mins < 1) return 'agora';
-        if (mins < 60) return `${mins}m`;
+        if (mins < 60) return `${mins} min`;
         if (hours < 24) return `${hours}h`;
         if (days < 7) return `${days}d`;
         return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });

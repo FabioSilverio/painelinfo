@@ -33,9 +33,13 @@
         MarketData.refresh();
         RedditHot.refresh();
         setupRedditControls();
-        refreshInterval = setInterval(loadFeeds, 2000);
+        refreshInterval = setInterval(loadFeeds, 5 * 60 * 1000);
         marketRefreshInterval = setInterval(() => MarketData.refresh(), 2000);
         setInterval(() => RedditHot.refresh(), 60000);
+        setInterval(() => {
+            renderLiveFeed();
+            if (currentView === 'feeds') renderFeedsList();
+        }, 60000);
     }
 
     // ---- NAVIGATION ----
