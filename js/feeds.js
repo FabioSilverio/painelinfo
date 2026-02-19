@@ -292,25 +292,10 @@ const FeedEngine = (() => {
         return articles;
     }
 
-    async function fetchAllFeeds() {
-        for (const s of FEED_SOURCES) {
-            sourceStatus[s.id] = { status: 'loading', count: 0 };
-        }
-        notifyCallbacks();
-
-        const results = await Promise.allSettled(
-            FEED_SOURCES.map(source => fetchSource(source))
-        );
-
-        const newArticles = [];
-        results.forEach(result => {
-            if (result.status === 'fulfilled' && result.value) {
-                newArticles.push(...result.value);
-            }
-        });
-
+    function mergeArticles(newArticles) {
         const byId = new Map(allArticles.map(a => [a.id, a]));
         const now = Date.now();
+        let added = 0;
         for (const article of newArticles) {
             const existing = byId.get(article.id);
             if (existing) {
@@ -321,17 +306,31 @@ const FeedEngine = (() => {
             } else {
                 if (!article.addedAt) article.addedAt = now;
                 byId.set(article.id, article);
+                added++;
             }
         }
         allArticles = Array.from(byId.values());
-
         allArticles.sort((a, b) => b.pubDate - a.pubDate);
+        if (allArticles.length > 500) allArticles = allArticles.slice(0, 500);
+        return added;
+    }
 
-        if (allArticles.length > 500) {
-            allArticles = allArticles.slice(0, 500);
+    async function fetchAllFeeds() {
+        for (const s of FEED_SOURCES) {
+            sourceStatus[s.id] = { status: 'loading', count: 0 };
         }
-
         notifyCallbacks();
+
+        await Promise.allSettled(
+            FEED_SOURCES.map(async (source) => {
+                const articles = await fetchSource(source);
+                if (articles && articles.length > 0) {
+                    mergeArticles(articles);
+                    notifyCallbacks();
+                }
+            })
+        );
+
         return allArticles;
     }
 

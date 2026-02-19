@@ -120,18 +120,20 @@
         if (!container) return;
         if (countEl) countEl.textContent = posts ? posts.length : 0;
         if (!posts || posts.length === 0) {
-            container.innerHTML = '<div class="empty-state"><p>Nenhum post com score alto na última meia hora. Tente atualizar.</p></div>';
+            container.innerHTML = '<div class="empty-state"><p>Nenhum post em alta no momento. Tente atualizar.</p></div>';
             return;
         }
-        container.innerHTML = posts.map(p => `
+        container.innerHTML = posts.map(p => {
+            const timeAgo = p.created ? FeedEngine.formatTimeAgo(p.created) : '';
+            return `
             <a class="reddit-post-item" href="${escapeHTML(p.permalink)}" target="_blank" rel="noopener">
                 <div class="reddit-post-meta">
                     <span class="reddit-sub">r/${escapeHTML(p.subreddit)}</span>
-                    <span class="reddit-score"><strong>${p.score}</strong> pts · ${p.numComments} coment.</span>
+                    <span class="reddit-score"><strong>${p.score.toLocaleString()}</strong> pts · ${p.numComments} coment.${timeAgo ? ' · ' + timeAgo : ''}</span>
                 </div>
                 <div class="reddit-post-title">${escapeHTML(p.title)}</div>
             </a>
-        `).join('');
+        `}).join('');
     }
 
     function setupFeedControls() {
